@@ -25,7 +25,8 @@ Bool isBufferEquals(char bufFile1[], int charRead1, char bufFile2[], int charRea
         return FALSE;
     }
 
-    for(int i = 0; i < charRead1; ++i){
+    int i;
+    for(i = 0; i < charRead1; ++i){
         if(bufFile1[i] != bufFile2[i]) {
             return FALSE;
         }
@@ -124,12 +125,9 @@ Bool isFilesSimilar(int fdFile1, int fdFile2,
                     continue;
                 }
                 
-                //printf("%c,%c ", char1, char2);
                 if(!isSimillarChars(char1, char2)){
-                    //printf("not similar\n");
                     return FALSE;
                 }
-                //printf("similar\n");
 
                 ++index1;
                 --(*charRead1);
