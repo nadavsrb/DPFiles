@@ -380,7 +380,7 @@ int checkStudents(ConfigData* configData){
         }
         strcat(path, pDirent->d_name);
 
-        // checks if the path is directory.
+        //checks if the path is directory.
         if(isDirectory(path)){
             // grade the student directory.
             if(gardeStudent(checkStudentDirectory(path, configData), pDirent->d_name) == ERROR){
@@ -437,14 +437,12 @@ int setConfigData(char const *configFilePath, ConfigData* configData){
 
     // checks if input file exists
     if(access(configData->inFilePath, F_OK) < 0) {
-        closedir(configData->mainDirFd);
         myPrint("Input file not exist\n");
         return ERROR;
     }
 
     // checks if output file exists
     if(access(configData->correctOutputFilePath, F_OK) < 0) {
-        closedir(configData->mainDirFd);
         myPrint("Output file not exist\n");
         return ERROR;
     }
@@ -488,7 +486,7 @@ int preperSettings() {
     
     // creating and restarting the output file for checking file.
     int outFD;
-    if((errorsFD = open(CHECKED_OUTPUT_FILE_PATH, O_CREAT | O_TRUNC, 0644)) < 0){
+    if((outFD = open(CHECKED_OUTPUT_FILE_PATH, O_CREAT | O_TRUNC, 0644)) < 0){
         myPrint("Error in: open\n");
         return ERROR;
     }
@@ -514,17 +512,16 @@ int preperToEnd(ConfigData* configData){
         return ERROR;
     }
 
-    // removing the compiled file for checking.
-    if(remove(NAME_COMPILED_TO_CHECK) < 0){
-        myPrint("Error in: remove\n");
-        return ERROR;
-    }
-
     // removing the output file for checking.
     if(remove(CHECKED_OUTPUT_FILE_PATH) < 0){
         myPrint("Error in: remove\n");
         return ERROR;
     }
+
+    // removing the compiled file for checking.
+    // (error can be if no c files in dir)
+    if(remove(NAME_COMPILED_TO_CHECK) < 0 ){}
+
 
     return SUCCESS;
 }

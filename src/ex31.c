@@ -323,5 +323,5 @@ int main(int argc, char const *argv[])
         exit(ERROR);
     }
 
-    return SUCCESS;
+    return result;
 }
