@@ -269,6 +269,20 @@ CheckStatus checkCFile(char* path, ConfigData* configData){
         myPrint("Error in: fork\n");
         return ERROR;
     } else if (sonPID == 0){ //we are the son process
+        //sets the errors fd.
+        int errorsFD;
+        if((errorsFD = open(ERROR_FILE_PATH, O_WRONLY | O_APPEND)) < 0){
+            myPrint("Error in: open\n");
+            exit(EXIT_WITH_ERROR);
+        }
+        if(dup2(errorsFD, STDERROR_FD) < 0) {
+            myPrint("Error in: dup2\n");
+            exit(EXIT_WITH_ERROR);
+        }
+        if(close(errorsFD) < 0){
+            myPrint("Error in: close\n");
+            exit(EXIT_WITH_ERROR);
+        }
 
         //checks the output
         char* args[] = {RUN_COMPILED_CHECK_BY,
@@ -319,6 +333,9 @@ CheckStatus checkStudentDirectory(char* path, ConfigData* configData){
         return ERROR;
     }
 
+    char copyPath[MAX_SIZE_CONFIG_DATA_LINE + 1];
+    strcpy(copyPath, path);
+
     // iterating the files in the students dir.
     struct dirent *pDirent;
     Bool isCFileFound = FALSE;
@@ -328,14 +345,16 @@ CheckStatus checkStudentDirectory(char* path, ConfigData* configData){
             return ERROR;
         }
 
-        // checking if is c file
-        if((strlen(pDirent->d_name) > 2)
-         && (strcmp(pDirent->d_name + strlen(pDirent->d_name) - 2, ".c") == 0)) {
-            // setting the path of the c file
-            strcat(path, "/");
-            strcat(path, pDirent->d_name);
+        // setting the path of the c file
+        strcat(path, "/");
+        strcat(path, pDirent->d_name);
 
+        // checking if is c file
+        if( !isDirectory(path) && ((strlen(pDirent->d_name) > 2)
+         && (strcmp(pDirent->d_name + strlen(pDirent->d_name) - 2, ".c") == 0))) {
             isCFileFound = TRUE;
+        } else{
+            strcpy(path, copyPath);
         }
     }
     if(closedir(studenDir) < 0){
