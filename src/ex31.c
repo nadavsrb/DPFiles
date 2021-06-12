@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define NUN_ARG 2
 #define ERROR -1
 #define BUFFER_SIZE 1024
 #define STDOUT_FD 1
+#define SUCCESS 0 
 
 typedef enum{
     ERROR_OCCURRED = -1,
@@ -282,14 +284,14 @@ int main(int argc, char const *argv[])
 
     // checks if num of args are as needed.
     if(argc != NUN_ARG) {
-        return ERROR;
+        exit(ERROR);
     }
 
     // Opening the first file
     int fdFile1 = open(argv[index], O_RDONLY);
     if(fdFile1 < 0){
         myPrint("Error in: open\n");
-        return ERROR;
+        exit(ERROR);
     }
 
     // Opening the second file
@@ -299,23 +301,27 @@ int main(int argc, char const *argv[])
         close(fdFile1);
 
         myPrint("Error in: open\n");
-        return ERROR;
+        exit(ERROR);
     }
 
     // comparing the files
-    int result = compareFiles(fdFile1, fdFile2);
+    Status result = compareFiles(fdFile1, fdFile2);
 
     // closing the first file
     if(close(fdFile1) < 0){
         myPrint("Error in: close\n");
-        return ERROR;
+        exit(ERROR);
     }
 
     // closing the second file
     if(close(fdFile2) < 0){
         myPrint("Error in: close\n");
-        return ERROR;
+        exit(ERROR);
     }
 
-    return result;
+    if(result == ERROR_OCCURRED) {
+        exit(ERROR);
+    }
+
+    return SUCCESS;
 }
