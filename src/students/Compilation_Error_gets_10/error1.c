@@ -2,5 +2,5 @@
 
 int main()
 {
-    printf("dfg");
-
+    return 0
+}

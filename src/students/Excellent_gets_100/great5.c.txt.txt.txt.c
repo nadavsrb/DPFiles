@@ -1,9 +1,31 @@
 #include <stdio.h>
-
+#include <stdlib.h> // For exit()
+  
 int main()
 {
-	int n1, n2;
-	printf("Please enter two numbers\n");
-	scanf ("%d %d",&n1, &n2);
-	printf("%d", n1+n2);
+    FILE *fptr;
+  
+    char filename[100], c;
+  
+    scanf("%s", filename);
+  
+    // Open file
+    fptr = fopen(filename, "r");
+    if (fptr == NULL)
+    {	
+		perror(filename);
+        printf("@ \n");
+        exit(0);
+    }
+  
+    // Read contents from file
+    c = fgetc(fptr);
+    while (c != EOF)
+    {
+        printf ("%c", c);
+        c = fgetc(fptr);
+    }
+  
+    fclose(fptr);
+    return 0;
 }

@@ -138,11 +138,12 @@ int gardeStudent(CheckStatus status, char* name) {
 /**
  * @brief checks a c file.
  * 
- * @param path the c file path.
+ * @param dirPath the c file directory path
+ * @param name the c file name.
  * @param configData the config data.
  * @return CheckStatus the status of checking, returning -1 if errors occurred.
  */
-CheckStatus checkCFile(char* path, ConfigData* configData){
+CheckStatus checkCFile(char* dirPath, char* name, ConfigData* configData){
     // help vars:
     pid_t sonPID;
     int sonStatus;
@@ -169,8 +170,13 @@ CheckStatus checkCFile(char* path, ConfigData* configData){
             exit(EXIT_WITH_ERROR);
         }
 
+        if(chdir(dirPath) < 0){
+            myPrint("Error in: chdir\n");
+            exit(EXIT_WITH_ERROR);
+        }
+
         //compiling the c file
-        char* args[] = {"gcc", "-o", NAME_COMPILED_TO_CHECK, path, NULL};
+        char* args[] = {"gcc", "-o", NAME_COMPILED_TO_CHECK, name, NULL};
         execvp(args[0], args); 
 
         //if we got here exec failed:
@@ -241,6 +247,11 @@ CheckStatus checkCFile(char* path, ConfigData* configData){
         }
         if(close(outFD) < 0){
             myPrint("Error in: close\n");
+            exit(EXIT_WITH_ERROR);
+        }
+
+        if(chdir(dirPath) < 0){
+            myPrint("Error in: chdir\n");
             exit(EXIT_WITH_ERROR);
         }
 
@@ -339,7 +350,7 @@ CheckStatus checkStudentDirectory(char* path, ConfigData* configData){
     // iterating the files in the students dir.
     struct dirent *pDirent;
     Bool isCFileFound = FALSE;
-    while(((pDirent = readdir(studenDir)) != NULL) && !isCFileFound){
+    while(((pDirent = readdir(studenDir)) != NULL)){
         if(pDirent < 0) {
             myPrint("Error in: readdir\n");
             return ERROR;
@@ -353,6 +364,7 @@ CheckStatus checkStudentDirectory(char* path, ConfigData* configData){
         if( !isDirectory(path) && ((strlen(pDirent->d_name) > 2)
          && (strcmp(pDirent->d_name + strlen(pDirent->d_name) - 2, ".c") == 0))) {
             isCFileFound = TRUE;
+            break;
         } else{
             strcpy(path, copyPath);
         }
@@ -365,8 +377,8 @@ CheckStatus checkStudentDirectory(char* path, ConfigData* configData){
     if(!isCFileFound) {
         return NO_C_FILE;
     }
-
-    return checkCFile(path, configData);
+    
+    return checkCFile(copyPath, pDirent->d_name, configData);
 }
 
 /**
@@ -399,12 +411,27 @@ int checkStudents(ConfigData* configData){
         }
         strcat(path, pDirent->d_name);
 
+        //saving copy of path, because path might change.
+        char copyPath[MAX_SIZE_CONFIG_DATA_LINE + 1];
+        strcpy(copyPath, path);
+
         //checks if the path is directory.
         if(isDirectory(path)){
             // grade the student directory.
             if(gardeStudent(checkStudentDirectory(path, configData), pDirent->d_name) == ERROR){
+                strcat(copyPath, "/");
+                strcat(copyPath, NAME_COMPILED_TO_CHECK);
+                // removing the compiled file for checking.
+                // (error can be if no c files in dir)
+                if(remove(copyPath) < 0 ){}
                 return ERROR;
             }
+
+            strcat(copyPath, "/");
+            strcat(copyPath, NAME_COMPILED_TO_CHECK);
+            // removing the compiled file for checking.
+            // (error can be if no c files in dir)
+            if(remove(copyPath) < 0 ){}
         } 
     }
 
@@ -536,11 +563,6 @@ int preperToEnd(ConfigData* configData){
         myPrint("Error in: remove\n");
         return ERROR;
     }
-
-    // removing the compiled file for checking.
-    // (error can be if no c files in dir)
-    if(remove(NAME_COMPILED_TO_CHECK) < 0 ){}
-
 
     return SUCCESS;
 }

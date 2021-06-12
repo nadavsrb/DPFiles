@@ -1,4 +1,7 @@
-students/Compilation_Error_gets_10/error1.c: In function ‘main’:
-students/Compilation_Error_gets_10/error1.c:5:5: error: expected declaration or statement at end of input
-    5 |     printf("dfg");
-      |     ^~~~~~
+error1.c: In function ‘main’:
+error1.c:5:13: error: expected ‘;’ before ‘}’ token
+    5 |     return 0
+      |             ^
+      |             ;
+    6 | }
+      | ~            
